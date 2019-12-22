@@ -71,12 +71,14 @@ class ServerlessLayers {
 
   getSettings() {
     const inboundSettings = (this.serverless.service.custom || {})[
-      'serverless-layers'
+      'serverless-lambda-layers'
     ];
     const defaultSettings = {
       packageManager: 'npm',
       compileDir: '.serverless',
       packagePath: 'package.json',
+      packageLockPath: 'package-lock.json',
+      yarnLockPath: 'yarn.lock',
       compatibleRuntimes: ['nodejs'],
       customInstallationCommand: null,
       layersDeploymentBucket: this.service.provider.deploymentBucket

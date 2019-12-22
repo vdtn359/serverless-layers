@@ -22,16 +22,22 @@ class Dependencies extends AbstractService {
     }).toString());
   }
 
-  copyProjectFile(filename) {
+  copyProjectFile(filename, destination) {
     this.init();
+    let filePath;
+    if (path.isAbsolute(filename)) {
+      filePath = filename;
+    } else {
+      filePath = process.resolve(path.cwd(), filename);
+    }
 
-    if (!fs.existsSync(filename)) {
+    if (!fs.existsSync(filePath)) {
       this.plugin.log(`[warning] "${filename}" file does not exists!`);
       return true;
     }
 
     return new Promise((resolve) => {
-      copyFile(filename, path.join(this.nodeJsDir, filename), (copyErr) => {
+      copyFile(filePath, path.join(this.nodeJsDir, destination), (copyErr) => {
         if (copyErr) throw copyErr;
         return resolve();
       });
@@ -43,14 +49,14 @@ class Dependencies extends AbstractService {
     this.plugin.log('Dependencies has changed! Re-installing...');
 
     await mkdirp.sync(this.nodeJsDir);
-    await this.copyProjectFile(this.plugin.settings.packagePath);
+    await this.copyProjectFile(this.plugin.settings.packagePath, 'package.json');
 
     if (this.plugin.settings.packageManager === 'npm') {
-      await this.copyProjectFile('package-lock.json');
+      await this.copyProjectFile(this.plugin.settings.packageLockPath || 'package-lock.json', 'package-lock.json');
     }
 
     if (this.plugin.settings.packageManager === 'yarn') {
-      await this.copyProjectFile('yarn.lock');
+      await this.copyProjectFile(this.plugin.settings.yarnLockPath || 'yarn.lock', 'yarn.lock');
     }
 
     // custom commands
